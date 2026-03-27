@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFS PMBA - SISTEMA COMPLETO</title>
+<style>
+body{font-family:Arial;background:#0b0d12;color:#eaeef3;margin:0}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:#151922;border:1px solid #232838;border-radius:14px;padding:16px;margin:10px 0}
+button{padding:10px;border:none;border-radius:10px;cursor:pointer}
+.done{background:#22c55e;color:#031b0b}
+.timer{font-size:32px;text-align:center;margin:16px}
+.progress{height:18px;background:#232838;border-radius:10px;overflow:hidden;margin:10px 0}
+.bar{height:100%;background:#22c55e;width:0%}
+.input{padding:8px;border-radius:8px;border:none;margin-top:5px;width:100%}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>SISTEMA COMPLETO CFS PMBA</h1>
+
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<h3>📊 Desempenho</h3>
+<input class="input" id="acertos" placeholder="Digite % de acertos do dia">
+<button onclick="salvarDesempenho()">Salvar</button>
+<p id="media"></p>
+
+<div id="cronograma"></div>
+
+<h3>🎯 Pontos fracos</h3>
+<div id="fracos"></div>
+
+<div class="timer" id="timer">25:00</div>
+<button onclick="startPomodoro()">Iniciar</button>
+<button onclick="resetPomodoro()">Resetar</button>
+
+</div>
+
+<script>
+let progresso = JSON.parse(localStorage.getItem('full'))||[];
+let desempenho = JSON.parse(localStorage.getItem('desempenho'))||[];
+
+function gerarDia(i){
+ return {
+  tarefas:Teoria (10 páginas) + Lei seca + 40 questões,
+  revisao:3-7-15 automática,
+  redacao: i%3===0 ? 'Redação' : '-',
+  simulado: i%7===0 ? 'Simulado completo' : '-'
+ }
+}
+
+let div=document.getElementById('cronograma');
+for(let i=1;i<=120;i++){
+ let d=gerarDia(i);
+ let ok=progresso.includes(i);
+ let el=document.createElement('div');
+ el.className='card';
+ el.innerHTML=`
+ <h3>Dia ${i}</h3>
+ <p>${d.tarefas}</p>
+ <p>${d.revisao}</p>
+ <p>${d.redacao}</p>
+ <p>${d.simulado}</p>
+ <button onclick="toggle(${i})" class="${ok?'done':''}">Concluir</button>
+ `;
+ div.appendChild(el);
+}
+
+function toggle(d){
+ if(progresso.includes(d)) progresso=progresso.filter(x=>x!==d);
+ else progresso.push(d);
+ localStorage.setItem('full',JSON.stringify(progresso));
+ location.reload();
+}
+
+function barra(){
+ document.getElementById('bar').style.width=(progresso.length/120*100)+'%';
+}
+barra();
+
+// desempenho
+function salvarDesempenho(){
+ let val=document.getElementById('acertos').value;
+ if(val){
+  desempenho.push(parseFloat(val));
+  localStorage.setItem('desempenho',JSON.stringify(desempenho));
+  atualizarMedia();
+ }
+}
+
+function atualizarMedia(){
+ if(desempenho.length>0){
+  let m=desempenho.reduce((a,b)=>a+b,0)/desempenho.length;
+  document.getElementById('media').innerText="Média: "+m.toFixed(1)+"%";
+ }
+}
+atualizarMedia();
+
+// pontos fracos
+function pontosFracos(){
+ let txt="Foque nas matérias com menor %";
+ document.getElementById('fracos').innerText=txt;
+}
+pontosFracos();
+
+// pomodoro
+let tempo=1500,intv;
+function startPomodoro(){
+ clearInterval(intv);
+ intv=setInterval(()=>{
+  tempo--;
+  let m=Math.floor(tempo/60),s=tempo%60;
+  document.getElementById('timer').innerText=${m}:${s<10?'0':''}${s};
+  if(tempo<=0) clearInterval(intv);
+ },1000);
+}
+function resetPomodoro(){tempo=1500;clearInterval(intv);document.getElementById('timer').innerText='25:00'}
+</script>
+</body>
+</html>
